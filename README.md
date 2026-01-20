@@ -13,7 +13,80 @@ go build -o linux-toolkit
 sudo mv linux-toolkit /usr/local/bin/
 ```
 
-## Usage
+## Quick Start
+
+Get started with linux-toolkit in just a few minutes:
+
+### Command Line Interface (CLI)
+
+```bash
+# Install (if not already done)
+git clone https://github.com/jun/linux-toolkit.git
+cd linux-toolkit
+go build -o linux-toolkit
+sudo mv linux-toolkit /usr/local/bin/
+
+# View disk information
+linux-toolkit disk
+
+# View CPU details
+linux-toolkit cpu
+
+# View GPU status
+linux-toolkit gpu
+
+# List running services
+linux-toolkit services
+
+# Check battery status (laptops)
+linux-toolkit battery
+```
+
+### Server Mode (Web UI + API)
+
+```bash
+# Start server on default port (8080)
+linux-toolkit server
+
+# Server will start at http://localhost:8080
+# Open your browser to see the web UI
+# API available at http://localhost:8080/api/v1/...
+
+# Start on custom port
+linux-toolkit server --port 3000
+
+# Start API only (no web UI)
+linux-toolkit server --no-ui
+```
+
+### Common Use Cases
+
+**Check disk space with details:**
+```bash
+linux-toolkit disk --device sda1 --io-stats --inode-stats
+```
+
+**Monitor CPU with per-core usage:**
+```bash
+linux-toolkit cpu --show-cores --show-temp
+```
+
+**View all GPUs with connector info:**
+```bash
+linux-toolkit gpu --all --show-connectors
+```
+
+**Find services listening on port 80:**
+```bash
+linux-toolkit services --port 80
+```
+
+**Get machine-readable JSON output:**
+```bash
+linux-toolkit disk --format json > disk-info.json
+```
+
+## Detailed Usage
 
 ### Disk Status
 
@@ -839,18 +912,18 @@ linux-toolkit/
 
 ## Server Mode
 
-Start an HTTP server to access system metrics via web browser or API.
+Start an HTTP server to access system metrics via web browser or API. The server provides both a beautiful web UI and a RESTful API for programmatic access.
 
-### Usage
+### Starting the Server
 
 ```bash
-# Start server on default port (8080)
+# Start server on default port (8080) with web UI enabled
 linux-toolkit server
 
 # Start server on custom port
 linux-toolkit server --port 3000
 
-# Bind to localhost only
+# Bind to localhost only (for local development)
 linux-toolkit server --bind 127.0.0.1 --port 8080
 
 # Set UI refresh interval (seconds)
@@ -858,36 +931,214 @@ linux-toolkit server --interval 10
 
 # Start API only (no HTML UI)
 linux-toolkit server --no-ui
+
+# Run in background with logging
+nohup linux-toolkit server --port 8080 > server.log 2>&1 &
 ```
+
+### Server Command Options
+
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--port` | `-p` | Server port number | 8080 |
+| `--bind` | `-b` | Bind address (e.g., 0.0.0.0, 127.0.0.1) | 0.0.0.0 |
+| `--interval` | `-i` | Web UI refresh interval in seconds | 5 |
+| `--no-ui` | `-n` | Start API only, disable HTML UI | false |
+| `--help` | `-h` | Help for server command | - |
 
 ### Accessing the Server
 
-**Web UI**: Open browser to `http://localhost:8080`
+#### Web UI
 
-**API Endpoints**:
-- `GET /api/v1/health` - Health check
-- `GET /api/v1/cpu` - CPU information
-- `GET /api/v1/disk` - Disk information
-- `GET /api/v1/gpu` - GPU information
-- `GET /api/v1/battery` - Battery information
-- `GET /api/v1/services` - Services information
-- `GET /api/v1/summary` - All metrics
+Open your browser and navigate to:
+```
+http://localhost:8080
+```
 
-### API Example
+The web UI provides:
+- **Real-time monitoring** with auto-refresh (configurable interval)
+- **Dashboard view** with all system metrics
+- **Individual metric views** for CPU, Disk, GPU, Battery, Services
+- **Color-coded status indicators** for quick health assessment
+- **Responsive design** that works on desktop and mobile
+
+#### REST API
+
+All API endpoints return JSON data with the following structure:
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "data": { /* metric data */ },
+  "timestamp": "2026-01-20T12:00:00Z"
+}
+```
+
+**Error Response:**
+```json
+{
+  "status": "error",
+  "error": "Error message description",
+  "code": "ERROR_CODE"
+}
+```
+
+### Available API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/health` | GET | Health check endpoint |
+| `/api/v1/cpu` | GET | CPU information |
+| `/api/v1/cpu/cores` | GET | CPU core details only |
+| `/api/v1/disk` | GET | Disk information |
+| `/api/v1/gpu` | GET | GPU information |
+| `/api/v1/battery` | GET | Battery information |
+| `/api/v1/services` | GET | Services information |
+| `/api/v1/summary` | GET | All system metrics |
+
+### API Usage Examples
 
 ```bash
-# Get CPU info as JSON
+# Check server health
+curl http://localhost:8080/api/v1/health
+
+# Get complete CPU information
 curl http://localhost:8080/api/v1/cpu
 
-# Get specific disk with I/O stats
-curl "http://localhost:8080/api/v1/disk?device=sda1&io-stats=true"
+# Get CPU with per-core details and temperature
+curl "http://localhost:8080/api/v1/cpu?show-cores=true&show-temp=true"
 
-# Get services with ports
+# Get disk information for specific device with I/O stats
+curl "http://localhost:8080/api/v1/disk?device=sda1&io-stats=true&inode-stats=true"
+
+# Get all mounted disks
+curl "http://localhost:8080/api/v1/disk?all=true"
+
+# Get all GPUs with connector information
+curl "http://localhost:8080/api/v1/gpu?show-connectors=true"
+
+# Get specific GPU by card name
+curl "http://localhost:8080/api/v1/gpu?card=card0"
+
+# Get battery status
+curl http://localhost:8080/api/v1/battery
+
+# Get running services with port information
 curl "http://localhost:8080/api/v1/services?show-ports=true"
+
+# Get services filtered by status
+curl "http://localhost:8080/api/v1/services?status=running"
+
+# Get specific service by name
+curl "http://localhost:8080/api/v1/services?name=nginx"
+
+# Get all system metrics at once
+curl http://localhost:8080/api/v1/summary
 ```
 
+### Production Deployment
 
+**Using systemd:**
+
+Create `/etc/systemd/system/linux-toolkit.service`:
+```ini
+[Unit]
+Description=Linux Toolkit Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/linux-toolkit server --port 8080 --interval 10
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
 ```
+
+Enable and start:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable linux-toolkit
+sudo systemctl start linux-toolkit
+```
+
+**Using Docker:**
+```dockerfile
+FROM golang:1.21-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN go build -o linux-toolkit
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /app/linux-toolkit .
+EXPOSE 8080
+CMD ["./linux-toolkit", "server", "--port", "8080"]
+```
+
+**Using Nginx Reverse Proxy:**
+```nginx
+location / {
+    proxy_pass http://localhost:8080;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+}
+```
+
+### API Integration Examples
+
+**Python:**
+```python
+import requests
+
+# Get CPU info
+response = requests.get('http://localhost:8080/api/v1/cpu')
+cpu_data = response.json()
+
+print(f"CPU Model: {cpu_data['data']['modelName']}")
+print(f"Usage: {cpu_data['data']['loadAvg1']}%")
+```
+
+**JavaScript:**
+```javascript
+// Using fetch
+fetch('http://localhost:8080/api/v1/disk')
+  .then(response => response.json())
+  .then(data => console.log(data.data.disk));
+```
+
+**Go:**
+```go
+package main
+
+import (
+    "encoding/json"
+    "net/http"
+)
+
+type APIResponse struct {
+    Status string `json:"status"`
+    Data   CPUInfo `json:"data"`
+}
+
+func main() {
+    resp, _ := http.Get("http://localhost:8080/api/v1/cpu")
+    defer resp.Body.Close()
+
+    var result APIResponse
+    json.NewDecoder(resp.Body).Decode(&result)
+}
+```
+
+> **Note:** For complete API documentation including request/response schemas, authentication (if added), and advanced usage patterns, see [API.md](API.md).
+
 
 ## Contributing
 

@@ -79,6 +79,7 @@ func (s *Server) handleDisk() http.HandlerFunc {
 				return
 			}
 
+			response := make(map[string]interface{})
 			var disks []*disk.DiskInfo
 			for _, devicePath := range mountedDisks {
 				diskInfo, err := reader.ReadDisk(devicePath)
@@ -87,8 +88,33 @@ func (s *Server) handleDisk() http.HandlerFunc {
 				}
 				disks = append(disks, diskInfo)
 			}
+			response["data"] = disks
 
-			respondJSON(w, disks, http.StatusOK)
+			ioStatsMap := make(map[string]*disk.IOStats)
+			for _, diskInfo := range disks {
+				ioStats, err := reader.ReadIOStats(diskInfo.Path)
+				if err == nil {
+					ioStatsMap[diskInfo.Name] = ioStats
+				} else {
+					ioStatsMap[diskInfo.Name] = &disk.IOStats{}
+				}
+			}
+			response["ioStats"] = ioStatsMap
+
+			inodeInfoMap := make(map[string]*disk.InodeInfo)
+			for _, diskInfo := range disks {
+				if diskInfo.MountPoint != "" {
+					inodeInfo, err := reader.ReadInodeInfo(diskInfo.MountPoint)
+					if err == nil {
+						inodeInfoMap[diskInfo.Name] = inodeInfo
+					} else {
+						inodeInfoMap[diskInfo.Name] = &disk.InodeInfo{}
+					}
+				}
+			}
+			response["inodeInfo"] = inodeInfoMap
+
+			respondJSON(w, response, http.StatusOK)
 			return
 		}
 

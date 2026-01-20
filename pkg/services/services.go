@@ -131,8 +131,8 @@ func (r *ServicesReader) parseSystemctlListOutput(output string) ([]ServiceInfo,
 	scanner := bufio.NewScanner(strings.NewReader(output))
 	for scanner.Scan() {
 		line := scanner.Text()
-		// Skip header and empty lines
-		if strings.HasPrefix(line, "UNIT") || strings.HasPrefix(line, "LOAD") || line == "" || strings.HasPrefix(line, " ") {
+		// Skip header, footer, and empty/whitespace-only lines
+		if strings.HasPrefix(line, "UNIT") || strings.HasPrefix(line, "LOAD") || strings.TrimSpace(line) == "" || strings.HasPrefix(line, "Legend:") || strings.HasPrefix(line, "To") {
 			continue
 		}
 
@@ -142,11 +142,35 @@ func (r *ServicesReader) parseSystemctlListOutput(output string) ([]ServiceInfo,
 			continue
 		}
 
+		var nameIndex int
+		var loadedIndex int
+		var activeIndex int
+		var subStateIndex int
+		var descStartIndex int
+
+		if fields[0] == "●" {
+			nameIndex = 1
+			loadedIndex = 2
+			activeIndex = 3
+			subStateIndex = 4
+			descStartIndex = 5
+		} else {
+			nameIndex = 0
+			loadedIndex = 1
+			activeIndex = 2
+			subStateIndex = 3
+			descStartIndex = 4
+		}
+
+		if fields[nameIndex] == "UNIT" || fields[nameIndex] == "LOAD" || fields[nameIndex] == "ACTIVE" || fields[nameIndex] == "SUB" {
+			continue
+		}
+
 		service := ServiceInfo{
-			Name:     fields[0],
-			Loaded:   fields[1],
-			Active:   fields[2],
-			SubState: fields[3],
+			Name:     fields[nameIndex],
+			Loaded:   fields[loadedIndex],
+			Active:   fields[activeIndex],
+			SubState: fields[subStateIndex],
 			Type:     "systemd",
 		}
 
@@ -161,9 +185,9 @@ func (r *ServicesReader) parseSystemctlListOutput(output string) ([]ServiceInfo,
 			service.Status = "unknown"
 		}
 
-		// Description is the rest of the fields
-		if len(fields) > 4 {
-			service.Description = strings.Join(fields[4:], " ")
+		// Description is rest of the fields
+		if len(fields) > descStartIndex {
+			service.Description = strings.Join(fields[descStartIndex:], " ")
 		}
 
 		services = append(services, service)
