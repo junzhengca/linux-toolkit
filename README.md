@@ -334,6 +334,206 @@ linux-toolkit cpu --format json --show-cores --show-temp
 | arm64, aarch64 | 📱 |
 | riscv64 | 🔬 |
 
+### GPU Information
+
+Display verbose GPU information including device name, vendor, driver, memory, clocks, temperature, power usage, utilization, and connector information.
+
+```bash
+# Display GPU information in table format (default) with colors and emojis
+linux-toolkit gpu
+
+# Display GPU information in JSON format
+linux-toolkit gpu --format json
+
+# Display information for specific GPU card
+linux-toolkit gpu --card card1
+
+# Show all GPUs
+linux-toolkit gpu --all
+
+# Show connector information
+linux-toolkit gpu --show-connectors
+
+# Show supported display modes
+linux-toolkit gpu --show-modes
+
+# Show all verbose information
+linux-toolkit gpu --all --show-connectors --show-modes
+
+# Combine options
+linux-toolkit gpu --card card0 --format json --show-connectors
+```
+
+#### Table Format Output (with colors and emojis)
+
+```
+  🎮 GPU Information
+
+  📋 Device Info
+  ────────────────────────────────────────
+  Card Name:         card0
+  Device:            /dev/dri/card0
+  Driver:            amdgpu
+  Vendor:            AMD
+  Bus ID:            0000:01:00.0
+  PCIe Gen:          4.0 (max: 4.0)
+  Bus Width:         x16
+  Type:              Discrete
+
+  🔧 Hardware
+  ────────────────────────────────────────
+  Vendor ID:         1002
+  Device ID:         73df
+  Class:             0300
+  Revision:          c4
+  VBIOS Version:     113-D05201-011
+
+  💾 Memory
+  ────────────────────────────────────────
+  VRAM Total:        16.00 GB
+  VRAM Used:         4.23 GB
+  VRAM Free:         11.77 GB
+  GART Size:         512.00 MB
+
+  ⚡ Clocks
+  ────────────────────────────────────────
+  Core Clock:        1.83 GHz (max: 2.25 GHz)
+  Memory Clock:      16.00 GHz (max: 16.00 GHz)
+
+  🌡️  Temperature
+  ────────────────────────────────────────
+  Temperature:        62°C (crit: 95°C)
+  Fan Speed:          1200 RPM
+
+  🔌 Power
+  ────────────────────────────────────────
+  Power Usage:        245 W
+  Power Limit:        300 W
+
+  📊 Utilization
+  ────────────────────────────────────────
+  GPU Usage:          78%
+  Memory Usage:       26%
+
+  🔌 Connectors
+  ────────────────────────────────────────
+  HDMI-A-1:          disconnected
+  DisplayPort-1:      connected
+  DisplayPort-2:      disconnected
+
+  🖥️  Display Modes
+  ────────────────────────────────────────
+  1920x1080
+  2560x1440
+  3840x2160
+  ... and 7 more modes
+```
+
+#### JSON Format Output
+
+```json
+{
+  "cardName": "card0",
+  "deviceName": "/dev/dri/card0",
+  "driver": "amdgpu",
+  "vendor": "AMD",
+  "vendorId": "1002",
+  "deviceId": "73df",
+  "subsystemVendor": "1043",
+  "subsystemDevice": "0482",
+  "class": "0300",
+  "revision": "c4",
+  "enabled": true,
+  "status": "active",
+  "connectors": [
+    "HDMI-A-1",
+    "DisplayPort-1",
+    "DisplayPort-2"
+  ],
+  "enabledConnectors": [
+    "DisplayPort-1"
+  ],
+  "vramSize": 17179869184,
+  "vramUsed": 4540267520,
+  "vramFree": 12639601664,
+  "gartSize": 536870912,
+  "coreClock": 1825000,
+  "memoryClock": 16000000,
+  "maxCoreClock": 2250000,
+  "maxMemoryClock": 16000000,
+  "powerUsage": 245000,
+  "powerLimit": 300000,
+  "temperature": 62.0,
+  "temperatureCrit": 95.0,
+  "fanSpeed": 1200,
+  "fanSpeedPercent": 45.0,
+  "gpuUtilPercent": 78.0,
+  "memoryUtilPercent": 26.0,
+  "busId": "0000:01:00.0",
+  "busWidth": "x16",
+  "pcieGen": "4.0",
+  "maxPcieGen": "4.0",
+  "vbiosVersion": "113-D05201-011",
+  "firmwareVersion": "",
+  "devicePath": "/sys/class/drm/card0",
+  "sysfsPath": "/sys/class/drm/card0/device",
+  "isPrimary": true,
+  "gpuType": "discrete",
+  "computeUnits": 72,
+  "cudaCores": 0,
+  "shaders": 4608,
+  "textureUnits": 288,
+  "rops": 128
+}
+```
+
+#### All GPUs Output
+
+```
+  🎮 All GPUs
+
+  card0
+  ────────────────────────────────────────
+  🔴 AMD | amdgpu | 0000:01:00.0
+  Memory: 16.00 GB | Temp: 62°C | Usage: 78%
+  Connectors: HDMI-A-1, DisplayPort-1, DisplayPort-2
+
+  card1
+  ────────────────────────────────────────
+  🟢 NVIDIA | nvidia | 0000:02:00.0
+  Memory: 8.00 GB | Temp: 58°C | Usage: 45%
+  Connectors: HDMI-A-1, DisplayPort-1
+```
+
+#### Vendor Colors
+
+| Vendor | Color |
+|--------|-------|
+| NVIDIA | 🟢 Green |
+| AMD | 🔴 Red |
+| Intel | 🔵 Blue |
+| Other | ⚪ White |
+
+#### Usage Status Colors
+
+| Usage % | Status | Color |
+|---------|--------|-------|
+| 0-25% | Idle | 🟢 Green |
+| 26-50% | Light | 🟢 HiGreen |
+| 51-75% | Moderate | 🟡 Yellow |
+| 76-90% | High | 🟠 HiYellow |
+| 91-100% | Critical | 🔴 Red |
+
+#### Temperature Colors
+
+| Temperature | Status | Color |
+|-------------|--------|-------|
+| 0-50°C | Cool | 🟢 Green |
+| 51-65°C | Normal | 🟢 HiGreen |
+| 66-80°C | Warm | 🟡 Yellow |
+| 81-90°C | Hot | 🟠 HiYellow |
+| 91°C+ | Critical | 🔴 Red |
+
 ### Command Options
 
 #### Disk Command Options
@@ -358,6 +558,17 @@ linux-toolkit cpu --format json --show-cores --show-temp
 | `--show-temp` | - | Include temperature information | false |
 | `--help` | `-h` | Help for cpu command | - |
 
+#### GPU Command Options
+
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--card` | `-c` | GPU card name (e.g., card0, card1) | auto-detect first GPU |
+| `--all` | `-a` | Show all GPUs | false |
+| `--format` | `-f` | Output format (table\|json) | table |
+| `--show-connectors` | - | Show connector information | false |
+| `--show-modes` | - | Show supported display modes | false |
+| `--help` | `-h` | Help for gpu command | - |
+
 ### Global Help
 
 ```bash
@@ -369,6 +580,9 @@ linux-toolkit disk --help
 
 # Show cpu command help
 linux-toolkit cpu --help
+
+# Show gpu command help
+linux-toolkit gpu --help
 ```
 
 ## Requirements
@@ -383,25 +597,32 @@ linux-toolkit cpu --help
 - `/sys/devices/system/cpu/` directory (standard on Linux)
 - `/sys/class/thermal/` directory (standard on Linux)
 - `/proc/loadavg` file (standard on Linux)
+- `/sys/class/drm/` directory (standard on Linux)
+- `/sys/bus/pci/devices/` directory (standard on Linux)
+- `/usr/bin/lspci` command (optional, for extended GPU info)
 
 ## Project Structure
 
 ```
 linux-toolkit/
-├── cmd/
-│   ├── root.go          # Root command
-│   ├── disk.go          # Disk stats subcommand
-│   └── cpu.go           # CPU info subcommand
-├── pkg/
-│   ├── disk/
-│   │   ├── disk.go      # Disk data structures and reader
-│   │   └── output.go    # Output formatting (table/JSON)
-│   └── cpu/
-│       ├── cpu.go       # CPU data structures and reader
-│       └── output.go     # Output formatting (table/JSON)
-├── main.go              # Entry point
-├── go.mod               # Go module definition
-└── README.md            # This file
+ ├── cmd/
+ │   ├── root.go          # Root command
+ │   ├── disk.go          # Disk stats subcommand
+ │   ├── cpu.go           # CPU info subcommand
+ │   └── gpu.go           # GPU info subcommand
+ ├── pkg/
+ │   ├── disk/
+ │   │   ├── disk.go      # Disk data structures and reader
+ │   │   └── output.go    # Output formatting (table/JSON)
+ │   ├── cpu/
+ │   │   ├── cpu.go       # CPU data structures and reader
+ │   │   └── output.go     # Output formatting (table/JSON)
+ │   └── gpu/
+ │       ├── gpu.go       # GPU data structures and reader
+ │       └── output.go     # Output formatting (table/JSON)
+ ├── main.go              # Entry point
+ ├── go.mod               # Go module definition
+ └── README.md            # This file
 ```
 
 ## Contributing
