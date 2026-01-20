@@ -534,6 +534,195 @@ linux-toolkit gpu --card card0 --format json --show-connectors
 | 81-90°C | Hot | 🟠 HiYellow |
 | 91°C+ | Critical | 🔴 Red |
 
+### Services Information
+
+Display services running on the system, including daemons and web services that bind to ports. Shows service name, status, PID, memory usage, CPU usage, start time, uptime, user, command, and listening ports.
+
+```bash
+# Display all running services in table format (default) with colors and emojis
+linux-toolkit services
+
+# Display all services including stopped ones
+linux-toolkit services --show-all
+
+# Display services in JSON format
+linux-toolkit services --format json
+
+# Show services filtered by status
+linux-toolkit services --status running
+linux-toolkit services --status failed
+
+# Show service by name (detailed view)
+linux-toolkit services --name nginx
+
+# Show services filtered by user
+linux-toolkit services --user nginx
+
+# Show services listening on specific port
+linux-toolkit services --port 80
+
+# Show detailed port information
+linux-toolkit services --show-ports
+
+# Combine options
+linux-toolkit services --status running --show-ports --format json
+```
+
+#### Table Format Output (with colors and emojis)
+
+```
+  🛠️  Services Information
+
+  📋 Summary
+  ────────────────────────────────────────
+  Total Services:    15
+  Running:           12
+  Stopped:           2
+  Failed:            1
+  Listening Ports:   8
+
+  🔄 Running Services
+  ─────────────────────────────────────────────────────────────────────────────────────────────────────
+  NAME              STATUS    PID    MEMORY    CPU    START TIME      USER      PORTS
+  ─────────────────────────────────────────────────────────────────────────────────────────────────────
+  🟢 sshd           running   1234   12.3 MB   0.1%   Jan 15 09:30    root      🟢:22/tcp
+  🟢 nginx          running   2345   45.6 MB   0.5%   Jan 15 09:31    nginx     🟢:80/tcp, 🟢:443/tcp
+  🟢 docker         running   3456   234.5 MB  1.2%   Jan 15 09:32    root      🟢:2375/tcp
+  🟢 systemd-journald running  4567   8.2 MB    0.0%   Jan 15 09:30    root      -
+  🟢 cron           running   5678   2.1 MB    0.0%   Jan 15 09:30    root      -
+  ─────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  🔴 Failed Services
+  ─────────────────────────────────────────────────────────────────────────────────────────────────────
+  NAME              STATUS    PID    MEMORY    CPU    START TIME      USER      PORTS
+  ─────────────────────────────────────────────────────────────────────────────────────────────────────
+  🔴 my-service     failed    -      -         -      -               root      -
+  ─────────────────────────────────────────────────────────────────────────────────────────────────────
+```
+
+#### Detailed Service Output
+
+```
+  🛠️  Service Details: nginx
+
+  📋 General Info
+  ────────────────────────────────────────
+  Name:              nginx
+  Description:       A high performance web server and a reverse proxy server
+  Status:            🟢 running
+  Loaded:            loaded
+  Active:            active
+  Sub State:         running
+  Type:              systemd
+
+  📊 Process Info
+  ────────────────────────────────────────
+  PID:               2345
+  User:              nginx
+  Memory:            45.6 MB
+  CPU:               0.5%
+  Start Time:        Jan 15 09:31:15
+  Uptime:            5 days, 2 hours, 15 minutes
+  Command:           nginx: master process /usr/sbin/nginx -g daemon off;
+
+  🌐 Listening Ports
+  ────────────────────────────────────────
+  🟢 tcp  0.0.0.0:80    LISTEN   nginx (2345)
+  🟢 tcp  0.0.0.0:443   LISTEN   nginx (2345)
+  🟢 tcp6 [::]:80       LISTEN   nginx (2345)
+  🟢 tcp6 [::]:443      LISTEN   nginx (2345)
+```
+
+#### JSON Format Output
+
+```json
+{
+  "totalServices": 15,
+  "running": 12,
+  "stopped": 2,
+  "failed": 1,
+  "totalPorts": 8,
+  "services": [
+    {
+      "name": "sshd",
+      "description": "OpenSSH server daemon",
+      "status": "running",
+      "loaded": "loaded",
+      "active": "active",
+      "subState": "running",
+      "pid": 1234,
+      "memoryMB": 12.3,
+      "cpuPercent": 0.1,
+      "startTime": "Jan 15 09:30:00",
+      "uptime": "5 days, 2 hours, 30 minutes",
+      "user": "root",
+      "command": "sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups",
+      "listeningPorts": [
+        {
+          "protocol": "tcp",
+          "localAddr": "0.0.0.0:22",
+          "port": 22,
+          "state": "LISTEN",
+          "processName": "sshd",
+          "pid": 1234
+        }
+      ],
+      "type": "systemd"
+    },
+    {
+      "name": "nginx",
+      "description": "A high performance web server and a reverse proxy server",
+      "status": "running",
+      "loaded": "loaded",
+      "active": "active",
+      "subState": "running",
+      "pid": 2345,
+      "memoryMB": 45.6,
+      "cpuPercent": 0.5,
+      "startTime": "Jan 15 09:31:15",
+      "uptime": "5 days, 2 hours, 15 minutes",
+      "user": "nginx",
+      "command": "nginx: master process /usr/sbin/nginx -g daemon off;",
+      "listeningPorts": [
+        {
+          "protocol": "tcp",
+          "localAddr": "0.0.0.0:80",
+          "port": 80,
+          "state": "LISTEN",
+          "processName": "nginx",
+          "pid": 2345
+        },
+        {
+          "protocol": "tcp",
+          "localAddr": "0.0.0.0:443",
+          "port": 443,
+          "state": "LISTEN",
+          "processName": "nginx",
+          "pid": 2345
+        }
+      ],
+      "type": "systemd"
+    }
+  ]
+}
+```
+
+#### Status Colors
+
+| Status | Icon | Color |
+|--------|-------|-------|
+| running, active | 🟢 | Green |
+| stopped, inactive | ⏸️ | Yellow |
+| failed, dead | 🔴 | Red |
+| unknown | ❓ | White |
+
+#### Protocol Icons
+
+| Protocol | Emoji |
+|----------|-------|
+| tcp, tcp6 | 🟢 |
+| udp, udp6 | 🔵 |
+
 ### Command Options
 
 #### Disk Command Options
@@ -569,6 +758,20 @@ linux-toolkit gpu --card card0 --format json --show-connectors
 | `--show-modes` | - | Show supported display modes | false |
 | `--help` | `-h` | Help for gpu command | - |
 
+#### Services Command Options
+
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--name` | `-n` | Filter by service name (supports partial match) | all |
+| `--status` | `-s` | Filter by status (running\|stopped\|failed) | all |
+| `--user` | `-u` | Filter by user | all |
+| `--port` | `-p` | Filter by port number | all |
+| `--show-ports` | - | Show listening ports for each service | false |
+| `--show-all` | `-a` | Show all services including stopped ones | false |
+| `--systemd-only` | - | Show only systemd services | false |
+| `--format` | `-f` | Output format (table\|json) | table |
+| `--help` | `-h` | Help for services command | - |
+
 ### Global Help
 
 ```bash
@@ -583,6 +786,9 @@ linux-toolkit cpu --help
 
 # Show gpu command help
 linux-toolkit gpu --help
+
+# Show services command help
+linux-toolkit services --help
 ```
 
 ## Requirements
@@ -600,6 +806,9 @@ linux-toolkit gpu --help
 - `/sys/class/drm/` directory (standard on Linux)
 - `/sys/bus/pci/devices/` directory (standard on Linux)
 - `/usr/bin/lspci` command (optional, for extended GPU info)
+- `/usr/bin/systemctl` command (for systemd services)
+- `/proc/[pid]/` directory (standard on Linux)
+- `/proc/net/` directory (standard on Linux)
 
 ## Project Structure
 
@@ -609,7 +818,8 @@ linux-toolkit/
  │   ├── root.go          # Root command
  │   ├── disk.go          # Disk stats subcommand
  │   ├── cpu.go           # CPU info subcommand
- │   └── gpu.go           # GPU info subcommand
+ │   ├── gpu.go           # GPU info subcommand
+ │   └── services.go      # Services info subcommand
  ├── pkg/
  │   ├── disk/
  │   │   ├── disk.go      # Disk data structures and reader
@@ -617,9 +827,12 @@ linux-toolkit/
  │   ├── cpu/
  │   │   ├── cpu.go       # CPU data structures and reader
  │   │   └── output.go     # Output formatting (table/JSON)
- │   └── gpu/
- │       ├── gpu.go       # GPU data structures and reader
- │       └── output.go     # Output formatting (table/JSON)
+ │   ├── gpu/
+ │   │   ├── gpu.go       # GPU data structures and reader
+ │   │   └── output.go     # Output formatting (table/JSON)
+ │   └── services/
+ │       ├── services.go  # Services data structures and reader
+ │       └── output.go    # Output formatting (table/JSON)
  ├── main.go              # Entry point
  ├── go.mod               # Go module definition
  └── README.md            # This file
