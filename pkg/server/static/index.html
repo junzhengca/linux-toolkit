@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Toolkit Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖥️ Linux Toolkit Dashboard</h1>
+            <div class="controls">
+                <select id="refresh-interval">
+                    <option value="5">5 seconds</option>
+                    <option value="10">10 seconds</option>
+                    <option value="30">30 seconds</option>
+                    <option value="0">Manual</option>
+                </select>
+                <button id="toggle-refresh">⏸️ Pause</button>
+                <button id="refresh-now">🔄 Refresh Now</button>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card cpu-card">
+                <h2>🖥️ CPU</h2>
+                <div class="metric">
+                    <span class="label">Usage:</span>
+                    <span class="value" id="cpu-usage">--</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="cpu-bar"></div>
+                </div>
+                <div class="metric">
+                    <span class="label">Temperature:</span>
+                    <span class="value" id="cpu-temp">--</span>
+                </div>
+            </div>
+
+            <div class="card gpu-card">
+                <h2>🎮 GPU</h2>
+                <div class="metric">
+                    <span class="label">Usage:</span>
+                    <span class="value" id="gpu-usage">--</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="gpu-bar"></div>
+                </div>
+                <div class="metric">
+                    <span class="label">Temperature:</span>
+                    <span class="value" id="gpu-temp">--</span>
+                </div>
+            </div>
+
+            <div class="card battery-card">
+                <h2>🔋 Battery</h2>
+                <div class="metric">
+                    <span class="label">Level:</span>
+                    <span class="value" id="battery-level">--</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="battery-bar"></div>
+                </div>
+                <div class="metric">
+                    <span class="label">Status:</span>
+                    <span class="value" id="battery-status">--</span>
+                </div>
+            </div>
+
+            <div class="card full-width disks-card">
+                <h2>💾 Disks</h2>
+                <div id="disks-list"></div>
+            </div>
+
+            <div class="card full-width services-card">
+                <h2>🛠️ Services</h2>
+                <div class="services-summary">
+                    <span class="status-indicator running"></span> <span id="services-running">--</span> running
+                    <span class="status-indicator stopped"></span> <span id="services-stopped">--</span> stopped
+                    <span class="status-indicator failed"></span> <span id="services-failed">--</span> failed
+                </div>
+                <div id="services-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

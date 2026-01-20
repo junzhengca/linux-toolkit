@@ -836,6 +836,57 @@ linux-toolkit/
  ├── main.go              # Entry point
  ├── go.mod               # Go module definition
  └── README.md            # This file
+
+## Server Mode
+
+Start an HTTP server to access system metrics via web browser or API.
+
+### Usage
+
+```bash
+# Start server on default port (8080)
+linux-toolkit server
+
+# Start server on custom port
+linux-toolkit server --port 3000
+
+# Bind to localhost only
+linux-toolkit server --bind 127.0.0.1 --port 8080
+
+# Set UI refresh interval (seconds)
+linux-toolkit server --interval 10
+
+# Start API only (no HTML UI)
+linux-toolkit server --no-ui
+```
+
+### Accessing the Server
+
+**Web UI**: Open browser to `http://localhost:8080`
+
+**API Endpoints**:
+- `GET /api/v1/health` - Health check
+- `GET /api/v1/cpu` - CPU information
+- `GET /api/v1/disk` - Disk information
+- `GET /api/v1/gpu` - GPU information
+- `GET /api/v1/battery` - Battery information
+- `GET /api/v1/services` - Services information
+- `GET /api/v1/summary` - All metrics
+
+### API Example
+
+```bash
+# Get CPU info as JSON
+curl http://localhost:8080/api/v1/cpu
+
+# Get specific disk with I/O stats
+curl "http://localhost:8080/api/v1/disk?device=sda1&io-stats=true"
+
+# Get services with ports
+curl "http://localhost:8080/api/v1/services?show-ports=true"
+```
+
+
 ```
 
 ## Contributing
